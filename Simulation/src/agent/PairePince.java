@@ -11,7 +11,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import devices.Motor;
-import devices.UpdatableDevice;
+import devices.UpdatableDevice.DevicesIndex;
 /**
  * Classe qui décrit les caractéristiques d'une <code>PairePince</code>.
  * Une paire de pince est contrôlée par le seul <code>Moteur</code> du robot.
@@ -84,7 +84,7 @@ public class PairePince {
 	public PairePince(Robot r) {
 		if (r == null) throw new IllegalArgumentException("The claws have to be fixed to a robot.");
 		robot  = r;
-		moteur = (Motor)r.getComposant(UpdatableDevice.INDEX_MOTOR); //pas de problème de ClassCastException :) all safe
+		moteur = (Motor)r.getComposant(DevicesIndex.INDEX_MOTOR);
 		posPinces = r.getPositionPinces(); //inutile, mais histoire d'être sûr de pas se prendre une NullPointerException lors d'un test :(
 	}
 	public void update() {
@@ -95,7 +95,7 @@ public class PairePince {
 				currentOuverture = OUVERTURE_MAX;
 				moteur.setState(Motor.NULL_TURN);
 			}else {
-				currentOuverture += 0.01; //0.01 purement arbitraire pour le moment. La vitesse d'ouverture on la connaît pas vraiment acctuellement.
+				currentOuverture += Motor.SPEED_TURN;
 			}
 			return;
 		case Motor.NEGATIVE_TURN : 
@@ -103,7 +103,7 @@ public class PairePince {
 				currentOuverture = OUVERTURE_MIN;
 				moteur.setState(Motor.NULL_TURN);
 			}else {
-				currentOuverture -= 0.01; 
+				currentOuverture -= Motor.SPEED_TURN; 
 			}
 			return;
 		}
@@ -112,10 +112,19 @@ public class PairePince {
 	public void paint(Graphics g, Graphics2D g2) {
 		AffineTransform Tx1 = new AffineTransform(); //pince bas
 		AffineTransform Tx2 = new AffineTransform(); //pince haut
+		/*
+		 * translation de vecteurs images. 
+		 */
 		Tx1.translate(posPinces.x,posPinces.y-1);
 		Tx2.translate(posPinces.x,posPinces.y-height+1);
+		/*
+		 * rotation de vecteurs images.
+		 */
 		Tx1.rotate(robot.getAngle() + currentOuverture,	0, 0);
 		Tx2.rotate(robot.getAngle() - currentOuverture, 0, height);
+		/*
+		 * dessin des vecteurs.
+		 */
 		g2.drawImage(pinceBas,  Tx1, null);
 		g2.drawImage(pinceHaut, Tx2, null);
 	}

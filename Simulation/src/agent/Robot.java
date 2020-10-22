@@ -1,6 +1,5 @@
 package agent;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -18,6 +17,7 @@ import devices.Motor;
 import devices.SonicSensor;
 import devices.TouchSensor;
 import devices.UpdatableDevice;
+import devices.UpdatableDevice.DevicesIndex;
 import environment.Plateau;
 import environment.PlateauGraphique;
 /**
@@ -126,8 +126,6 @@ public class Robot extends Objects {
 		//on dessine les pinces et le robot par dessus
 		pp.paint(g,g2);
 		g2.drawImage(img, Tx, null);
-		g2.setColor(Color.RED);
-		g2.fillRect((int)getPositionCapteurs().x,(int)getPositionCapteurs().y,2,2);
 	}
 	/**
 	 * Représentation textuelle de l'état du robot.
@@ -203,7 +201,9 @@ public class Robot extends Objects {
 	 * UpdatableDevice
 	 * @return le composant du robot à l'index spécifié.
 	 */
-	public UpdatableDevice getComposant(byte INDEX_CONTSANT) {
-		return composants[INDEX_CONTSANT];
+	public UpdatableDevice getComposant(DevicesIndex cste) {
+		if (cste == null) throw new IllegalArgumentException("The argument must be a constant among existing UpdatableDevice constants.");
+		return composants[cste.ordinal()];
+		
 	}
 }

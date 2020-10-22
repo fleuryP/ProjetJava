@@ -10,37 +10,11 @@ import environment.*;
  */
 public class ColorSensor extends Sensor {
 	/**
-	 * Constante String pour la couleur Noir.
+	 * Liste des couleurs du plateau.
+	 * @author GATTACIECCA Bastien
 	 */
-	public static final String BLACK	= "BLACK";
-	/**
-	 * Constante String pour la couleur Vert.
-	 */
-	public static final String GREEN	= "GREEN";
-	/**
-	 * Constante String pour la couleur Rouge.
-	 */
-	public static final String RED		= "RED";
-	/**
-	 * Constante String pour la couleur Bleu.
-	 */
-	public static final String BLUE		= "BLUE";
-	/**
-	 * Constante String pour la couleur Jaune.
-	 */
-	public static final String YELLOW	= "YELLOW";
-	/**
-	 * Constante String pour la couleur Blanc.
-	 */
-	public static final String WHITE	= "WHITE";
-	/**
-	 * Constante String pour la couleur Vert.
-	 */
-	public static final String GREY		= "GREY";
-	/**
-	 * Constante String pour la couleur Gris foncé qui indique les murs en plexiglas en fait ...
-	 */
-	public static final String DARKGREY	= "DARKGREY";
+	public static enum ColorName {
+		BLACK, DARKGREY, GREY, WHITE, YELLOW, GREEN, RED, BLUE}
 	/**
 	 * Tableau de couleur récupéré depuis l'environnement.
 	 */
@@ -49,7 +23,7 @@ public class ColorSensor extends Sensor {
 	 * La couleur (r,g,b) actuellement sous le "nez" du capteur de couleur.
 	 */
 	private Color currentColor;
-	
+
 	public ColorSensor(PlateauGraphique pg, Robot r) {
 		super(pg,r);
 		pixels = getEnvironnement().getPixels();
@@ -60,23 +34,23 @@ public class ColorSensor extends Sensor {
 		double x = getRobot().getPositionCapteurs().x;
 		double y = getRobot().getPositionCapteurs().y;
 		currentColor = pixels[(int)x][(int)y];
-		//System.out.println(getColor());
+		//System.out.println(getColor().name());
 	}
 	/**
 	 * Retourne sous forme de chaîne de caractères la couleur perçue par
 	 * le capteur.
 	 * @return une des constantes String de couleur
 	 */
-	public String getColor() {
+	public ColorName getColor() {
 		int sumrgb = currentColor.getRed() + currentColor.getGreen() + currentColor.getBlue();
 		switch (sumrgb) {
-		case 0: return BLACK;
-		case 3*114: return DARKGREY;
-		case 3*193: return GREY;
-		case 3*255: return WHITE;
+		case 0: return ColorName.BLACK;
+		case 3*114: return ColorName.DARKGREY;
+		case 3*193: return ColorName.GREY;
+		case 3*255: return ColorName.WHITE;
 		}
 		return (currentColor.getGreen() == 255) ? 
-				(currentColor.getRed() == 255) ? YELLOW : GREEN
-				: (currentColor.getRed() == 255) ? RED : BLUE;
+				(currentColor.getRed() == 255) ? ColorName.YELLOW : ColorName.GREEN
+						: (currentColor.getRed() == 255) ? ColorName.RED : ColorName.BLUE;
 	}
 }

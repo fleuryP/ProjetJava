@@ -1,7 +1,7 @@
 package agent;
 
 import devices.BigMotor;
-import devices.UpdatableDevice;
+import devices.UpdatableDevice.DevicesIndex;
 import environment.PlateauGraphique;
 /**
  * Classe qui précise les caractéristiques d'un <code>Robot</code> s'il
@@ -25,10 +25,10 @@ public class MovingRobot extends Robot {
 	
 	public MovingRobot(PlateauGraphique pg, String name, double x, double y) {
 		super(pg, name, x, y);
-		leftMotor = (BigMotor)getComposant(UpdatableDevice.INDEX_BIGMOTOR_LEFT);
-		rightMotor = (BigMotor)getComposant(UpdatableDevice.INDEX_BIGMOTOR_RIGHT);
-		//leftMotor.setForce(0.2);
-		//rightMotor.setForce(1);
+		leftMotor 	= (BigMotor)getComposant(DevicesIndex.INDEX_BIGMOTOR_LEFT);
+		rightMotor 	= (BigMotor)getComposant(DevicesIndex.INDEX_BIGMOTOR_RIGHT);
+		//leftMotor.setForce(1);
+		//rightMotor.setForce(-0.5);
 	}
 	@Override
 	public void update() {

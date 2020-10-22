@@ -9,11 +9,13 @@ package devices;
  * @see Sensor
  */
 public interface UpdatableDevice {
-	public static final byte INDEX_BIGMOTOR_LEFT	= 0;
-	public static final byte INDEX_BIGMOTOR_RIGHT	= 1;
-	public static final byte INDEX_MOTOR			= 2;
-	public static final byte INDEX_TOUCH			= 3;
-	public static final byte INDEX_SONIC			= 4;
-	public static final byte INDEX_COLOR			= 5;
+	public static enum DevicesIndex { 
+		INDEX_BIGMOTOR_LEFT,
+		INDEX_BIGMOTOR_RIGHT,
+		INDEX_MOTOR,
+		INDEX_TOUCH,
+		INDEX_SONIC,
+		INDEX_COLOR}
+	
 	public void updateDevice();
 }

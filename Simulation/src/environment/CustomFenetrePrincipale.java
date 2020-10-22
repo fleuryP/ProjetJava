@@ -31,11 +31,8 @@ public class CustomFenetrePrincipale extends FenetrePrincipale {
 		setSize(getSize().width, getSize().height + 35);
 
 		Robot[]allRobots = getPanel().getRobots();
-		int p = 0; for (int i = 0; i < allRobots.length; i++) {
-			if (allRobots[i] instanceof ControlledRobot) {
-				p++;
-			}
-		}
+		int p = 0; for (int i = 0; i < allRobots.length; i++)
+			if (allRobots[i] instanceof ControlledRobot) p++;
 		robotsControles = new ControlledRobot[p]; p = 0; 
 		for (int i = 0; i < allRobots.length; i++) {
 			if (allRobots[i] instanceof ControlledRobot) {
@@ -80,7 +77,7 @@ public class CustomFenetrePrincipale extends FenetrePrincipale {
 		tabButs[3].addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				for (ControlledRobot r : robotsControles) {
-					Motor moteur = (Motor)r.getComposant(UpdatableDevice.INDEX_MOTOR);
+					Motor moteur = (Motor)r.getComposant(UpdatableDevice.DevicesIndex.INDEX_MOTOR);
 					moteur.setState(Motor.POSITIVE_TURN);
 				}
 			}
@@ -89,7 +86,7 @@ public class CustomFenetrePrincipale extends FenetrePrincipale {
 		tabButs[4].addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				for (ControlledRobot r : robotsControles) {
-					Motor moteur = (Motor)r.getComposant(UpdatableDevice.INDEX_MOTOR);
+					Motor moteur = (Motor)r.getComposant(UpdatableDevice.DevicesIndex.INDEX_MOTOR);
 					moteur.setState(Motor.NEGATIVE_TURN);
 				}
 			}

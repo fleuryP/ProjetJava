@@ -68,7 +68,7 @@ public class PlateauGraphique extends Plateau implements	ActionListener,
 				new Palet(700,560),
 				new Palet(500,280),
 				new Palet(240,60),
-				new ControlledRobot(this,"Cedric",600,400),
+				new MovingRobot(this,"Cedric",600,400),
 				/*new Robot(this,"Adam",230,650)*/};
 		
 		initBothTabs(); //init palets et robots

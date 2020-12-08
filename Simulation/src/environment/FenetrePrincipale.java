@@ -13,19 +13,17 @@ import javax.swing.JFrame;
 public class FenetrePrincipale extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
-	private PlateauGraphique panel;
+	protected PlateauGraphique panel;
 	
 	public FenetrePrincipale() {
 		setLayout(null);
 		setSize(Plateau.X+16,Plateau.Y+39);
-		setResizable(false);
+		setResizable(true);
 		//On centre la fenêtre sur l'écran lorsqu'on la rend visible.
 		setLocationRelativeTo(null);
+		//setLocation(0,-100);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		panel = new PlateauGraphique();
 		add(panel);
-	}
-	protected PlateauGraphique getPanel() {
-		return panel;
 	}
 }

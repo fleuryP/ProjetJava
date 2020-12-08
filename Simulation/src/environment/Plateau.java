@@ -1,10 +1,13 @@
 package environment;
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 /**
@@ -47,6 +50,26 @@ public abstract class Plateau extends JPanel {
 	 * Le <code>Rectangle</code> de la surface du plateau.
 	 */
 	private static final Rectangle plateauRectangle = new Rectangle(0,0,X,Y);
+	/**
+	 * Ligne du bas du <code>Plateau</code>.
+	 */
+	public static final Line2D LINE_SOUTH = new Line2D.Double(0,Y,X,Y);
+	/**
+	 * Ligne du haut du <code>Plateau</code>.
+	 */
+	public static final Line2D LINE_NORTH = new Line2D.Double(0,0,X,0);
+	/**
+	 * Ligne du côté droit du <code>Plateau</code>.
+	 */
+	public static final Line2D LINE_EAST = new Line2D.Double(0,X,X,Y);
+	/**
+	 * Ligne du côté gauche du <code>Plateau</code>.
+	 */
+	public static final Line2D LINE_WEST = new Line2D.Double(0,0,0,Y);
+	/**
+	 * Les quattre lignes qui forment les bords du <code>Plateau</code>.
+	 */
+	public static final Line2D[] LINES = {LINE_SOUTH,LINE_NORTH,LINE_EAST,LINE_WEST};
 	
 	static {
 		try {
@@ -63,6 +86,13 @@ public abstract class Plateau extends JPanel {
 	}
 	public Plateau() {
 		setBounds(0,0,X,Y);
+	}
+	/**
+	 * Dessine le plateau.
+	 */
+	public void paint(Graphics g) {
+		if (plateau == null) return;
+		g.drawImage(plateau,0,0,this);
 	}
 	/**
 	 * Méthode de classe qui indique si un point aux coordonnées (x,y) se 

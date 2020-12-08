@@ -4,7 +4,8 @@ import agent.*;
 import environment.*;
 /**
  * Classe qui décrit les caractéristiques du capteur de couleur. 
- * Le capteur se situe face au sol pour récupérer une couleur (uniquement).
+ * Le capteur se situe face au sol pour récupérer une couleur. Aucun
+ * autre mode du capteur de couleur n'est utilisé.
  * @author GATTACIECCA Bastien
  * @author FLEURY Pierre
  */
@@ -16,9 +17,18 @@ public class ColorSensor extends Sensor {
 	public static enum ColorName {
 		BLACK, DARKGREY, GREY, WHITE, YELLOW, GREEN, RED, BLUE}
 	/**
+	 * Tableau des constantes de couleur utilisées de la classe Color je java.awt
+	 */
+	private static final Color[]used = new Color[] {
+			Color.BLACK, 		Color.DARK_GRAY, 
+			Color.LIGHT_GRAY, 	Color.WHITE, 
+			Color.YELLOW, 		Color.GREEN, 
+			Color.RED, 			Color.BLUE
+	};
+	/**
 	 * Tableau de couleur récupéré depuis l'environnement.
 	 */
-	private Color[][]pixels;
+	private final Color[][]pixels;
 	/**
 	 * La couleur (r,g,b) actuellement sous le "nez" du capteur de couleur.
 	 */
@@ -37,20 +47,35 @@ public class ColorSensor extends Sensor {
 		//System.out.println(getColor().name());
 	}
 	/**
-	 * Retourne sous forme de chaîne de caractères la couleur perçue par
-	 * le capteur.
+	 * Retourne sous forme de constante de couleur la couleur perçue par
+	 * le capteur. Cette méthode ne devrait pas être utilisée par l'utilisateur.
 	 * @return une des constantes String de couleur
 	 */
 	public ColorName getColor() {
-		int sumrgb = currentColor.getRed() + currentColor.getGreen() + currentColor.getBlue();
-		switch (sumrgb) {
-		case 0: return ColorName.BLACK;
-		case 3*114: return ColorName.DARKGREY;
-		case 3*193: return ColorName.GREY;
-		case 3*255: return ColorName.WHITE;
+		ColorName[]values = ColorName.values();
+		for (int p = 0; p < used.length; p++) {
+			if (used[p].equals(currentColor)) return values[p];
 		}
-		return (currentColor.getGreen() == 255) ? 
-				(currentColor.getRed() == 255) ? ColorName.YELLOW : ColorName.GREEN
-						: (currentColor.getRed() == 255) ? ColorName.RED : ColorName.BLUE;
+		throw new RuntimeException("Something went wrong with the \"plateau.png\" pixel color");
+	}
+	/**
+	 * Retourne sous forme de tableau d'entier à trois cases les trois valeurs
+	 * respectivement de rouge, vert, et bleu de l'attribut <code>currentColor</code>.
+	 * C'est cette méthode qui doit être visible par l'utilisateur pour récupérer
+	 * les données du <code>ColorSensor</code>.
+	 * @return un tableau d'entier contenant les valeurs RGB de la couleur perçue.
+	 */
+	public int[] getRGB() {
+		int R = currentColor.getRed();
+		int G = currentColor.getGreen();
+		int B = currentColor.getBlue();
+		return new int[] {R,G,B};
+	}
+	/**
+	 * Représentation textuelle du <code>ColorSensor</code>.
+	 */
+	public String toString() {
+		String sensorString = super.toString();
+		return sensorString + " = [currentColor = " + getColor().name() + "]";
 	}
 }

@@ -9,14 +9,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 import agent.ControlledRobot;
-import agent.Robot;
-import devices.Motor;
-import devices.UpdatableDevice;
+import agent.Palet;
+import devices.TouchSensor;
+import devices.UpdatableDevice.DevicesIndex;
 /**
  * Classe qui décrit une <code>FenetrePrincipale</code> avec une barre
  * de boutons en bas, qui permettent plusieurs fonctionnalités pour
  * faire des tests avec le robot.
- * 
+ *
  * @author GATTACIECCA Bastien
  * @author FLEURY Pierre
  *
@@ -24,21 +24,14 @@ import devices.UpdatableDevice;
 public class CustomFenetrePrincipale extends FenetrePrincipale {
 	private static final long serialVersionUID = 1L;
 
-	private ControlledRobot[]robotsControles;
+	private ControlledRobot robotsControle;
 
 	public CustomFenetrePrincipale() {
 		super();
 		setSize(getSize().width, getSize().height + 35);
 
-		Robot[]allRobots = getPanel().getRobots();
-		int p = 0; for (int i = 0; i < allRobots.length; i++)
-			if (allRobots[i] instanceof ControlledRobot) p++;
-		robotsControles = new ControlledRobot[p]; p = 0; 
-		for (int i = 0; i < allRobots.length; i++) {
-			if (allRobots[i] instanceof ControlledRobot) {
-				robotsControles[p] = (ControlledRobot)allRobots[i]; p++;
-			}
-		}
+		robotsControle = panel.getControlledRobot();
+
 		initPlayButton();
 	}
 	private void initPlayButton() {
@@ -58,53 +51,53 @@ public class CustomFenetrePrincipale extends FenetrePrincipale {
 		//bouton play/pause
 		tabButs[0].addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				getPanel().setPause(!getPanel().isInPause());
+				panel.setPause(!panel.isInPause());
 			}
 		});
 		//bouton direction via curseur
 		tabButs[1].addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				getPanel().setNeedCursor(!getPanel().isCursorDisplayed());
+				panel.setNeedCursor(!panel.isCursorDisplayed());
 			}
 		});
 		//bouton relocalisation via drag
 		tabButs[2].addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				getPanel().setDrag(!getPanel().isDragNeeded());
+				panel.setDrag(!panel.isDragNeeded());
 			}
 		});
 		//bouton ouvrir pinces
 		tabButs[3].addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				for (ControlledRobot r : robotsControles) {
-					Motor moteur = (Motor)r.getComposant(UpdatableDevice.DevicesIndex.INDEX_MOTOR);
-					moteur.setState(Motor.POSITIVE_TURN);
+				robotsControle.getPinces().open();
+				Palet p = robotsControle.getPinces().currentGrippedPalet();
+				if (p != null) {
+					robotsControle.getPinces().dropPalet(p);
 				}
 			}
 		});
 		//bouton fermer pinces
 		tabButs[4].addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				for (ControlledRobot r : robotsControles) {
-					Motor moteur = (Motor)r.getComposant(UpdatableDevice.DevicesIndex.INDEX_MOTOR);
-					moteur.setState(Motor.NEGATIVE_TURN);
+				if (robotsControle.getPinces().isFullyOpen()) {
+					TouchSensor ts = robotsControle.getComposant(DevicesIndex.INDEX_TOUCH);
+					if (ts.getState()) {
+						robotsControle.getPinces().takePalet(ts.getSource());
+					}
 				}
+				robotsControle.getPinces().close();
 			}
 		});
 		//bouton tourner gauche
 		tabButs[5].addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
-				for (ControlledRobot r : robotsControles) {
-					r.setAngle(r.getAngle() - 0.1);
-				}
+				robotsControle.setAngle(robotsControle.getAngle() - Math.PI/40);
 			}
 		});
 		//bouton tourner droite
 		tabButs[6].addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
-				for (ControlledRobot r : robotsControles) {
-					r.setAngle(r.getAngle() + 0.1);
-				}
+				robotsControle.setAngle(robotsControle.getAngle() + Math.PI/40);
 			}
 		});
 	}
@@ -116,7 +109,7 @@ public class CustomFenetrePrincipale extends FenetrePrincipale {
 	 * @param pos La position du bouton en partant de la gauche.
 	 * @return un Bouton paramétré mais sans listener.
 	 */
-	private JButton createBouton(ImageIcon icon,int pos) {
+	private final JButton createBouton(ImageIcon icon,int pos) {
 		JButton b = new JButton(icon);
 		this.add(b);
 		b.setBounds(pos*35,Plateau.Y,35,35);

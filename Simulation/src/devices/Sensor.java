@@ -1,4 +1,6 @@
 package devices;
+import java.awt.Graphics2D;
+
 import agent.Robot;
 import environment.PlateauGraphique;
 /**
@@ -16,11 +18,11 @@ public abstract class Sensor implements UpdatableDevice {
 	/**
 	 * Un capteur a accès à son environnement.
 	 */
-	private PlateauGraphique environnement;
+	protected PlateauGraphique environnement;
 	/**
 	 * Un capteur donne les informations au robot sur lequel il est installé.
 	 */
-	private Robot robot;
+	protected Robot robot;
 	
 	public Sensor(PlateauGraphique pg, Robot r) {
 		if (pg == null) throw new IllegalArgumentException("A sensor needs an environment to be used.");
@@ -28,22 +30,17 @@ public abstract class Sensor implements UpdatableDevice {
 		environnement = pg;
 		robot = r;
 	}
-	
+	/**
+	 * {@inheritDoc}
+	 */
 	public abstract void updateDevice();
 	/**
-	 * Récupère l'environnement alentour.
-	 * @return l'environnement
+	 * Permet à un <code>Sensor</code> de dessiner sa fonctionnalité. Par exemple, un
+	 * appel à <code>paintDevice(Graphics2D)</code> sur un <code>SonicSensor</code> peindra
+	 * le cône de vision du capteur ainsi que la distance qui le relie à l'objet le plus proche.
+	 * @param g Le contexte graphique dans lequel on dessine.
 	 */
-	public PlateauGraphique getEnvironnement() {
-		return environnement;
-	}
-	/**
-	 * Récupère le robot.
-	 * @return le robot
-	 */
-	public Robot getRobot() {
-		return robot;
-	}
+	public abstract void paintDevice(Graphics2D g);
 	/**
 	 * Représentation textuelle d'un <code>Sensor</code>.
 	 */

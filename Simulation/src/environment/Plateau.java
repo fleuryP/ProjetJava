@@ -2,14 +2,15 @@ package environment;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
+
+import agent.Objects;
+import utils.Rectangle2D;
 /**
  * Classe abstraite qui définit les caractéristiques d'un <code>Plateau</code>.
  * Cette classe présente des constantes utiles comme les dimensions du plateau,
@@ -49,43 +50,21 @@ public abstract class Plateau extends JPanel {
 	/**
 	 * Le <code>Rectangle</code> de la surface du plateau.
 	 */
-	private static final Rectangle plateauRectangle = new Rectangle(0,0,X,Y);
-	/**
-	 * Ligne du bas du <code>Plateau</code>.
-	 */
-	public static final Line2D LINE_SOUTH = new Line2D.Double(0,Y,X,Y);
-	/**
-	 * Ligne du haut du <code>Plateau</code>.
-	 */
-	public static final Line2D LINE_NORTH = new Line2D.Double(0,0,X,0);
-	/**
-	 * Ligne du côté droit du <code>Plateau</code>.
-	 */
-	public static final Line2D LINE_EAST = new Line2D.Double(0,X,X,Y);
-	/**
-	 * Ligne du côté gauche du <code>Plateau</code>.
-	 */
-	public static final Line2D LINE_WEST = new Line2D.Double(0,0,0,Y);
-	/**
-	 * Les quattre lignes qui forment les bords du <code>Plateau</code>.
-	 */
-	public static final Line2D[] LINES = {LINE_SOUTH,LINE_NORTH,LINE_EAST,LINE_WEST};
+	private static final Rectangle2D plateauRectangle = new Rectangle2D(0,0,X,Y);
 	
 	static {
 		try {
 			plateau = ImageIO.read(new File("plateau.png")); //on lit l'image 1cm = 4px
 			pixels = new Color[X][Y];
-			for (int i = 0; i < X; i++) {
-				for (int j = 0; j < Y; j++) {
+			for (int i = 0; i < X; i++)
+				for (int j = 0; j < Y; j++)
 					pixels[i][j] = new Color(plateau.getRGB(i,j)); //on créé un tableau 2D qui récupère chaque pixel de l'image
-				}
-			}
 		} catch (IOException e) {
 			System.out.println("Le fichier \"plateau.png\" n'a pas pu être chargé.");
 		}
 	}
 	public Plateau() {
-		setBounds(0,0,X,Y);
+		setSize(X,Y);
 	}
 	/**
 	 * Dessine le plateau.
@@ -103,6 +82,15 @@ public abstract class Plateau extends JPanel {
 	 */
 	public static boolean contains(double x, double y) {
 		return plateauRectangle.contains(x,y);
+	}
+	/**
+	 * Méthode de classe qui indique si l'objet du plateau en paramètre se 
+	 * situe dans le plateau.
+	 * @param o un Objects (un palet ou un robot)
+	 * @return Plateau.contains(x,y)
+	 */
+	public static boolean contains(Objects o) {
+		return plateauRectangle.includes(o.getShape().getForm());
 	}
 	/**
 	 * Retourne le tableau de <code>Color</code> de 2 dimensions. Cela permettra 

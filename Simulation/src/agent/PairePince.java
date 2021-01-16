@@ -10,6 +10,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import devices.Motor;
+import devices.TouchSensor;
 import devices.UpdatableDevice.DevicesIndex;
 /**
  * Classe qui décrit les caractéristiques d'une <code>PairePince</code>.
@@ -38,11 +39,6 @@ import devices.UpdatableDevice.DevicesIndex;
 public class PairePince {
 	private static Image pinceHaut;
 	private static Image pinceBas;
-	//	/**
-	//	 * Longueur de l'image.
-	//	 * On en a pas plus besoin que ça à priori ...
-	//	 */
-	//	private static int width;
 	/**
 	 * Largeur de l'image.
 	 */
@@ -59,7 +55,6 @@ public class PairePince {
 		try {
 			pinceHaut = ImageIO.read(new File("pinceHaut.png"));
 			pinceBas = ImageIO.read(new File("pinceBas.png"));
-			//width = pinceHaut.getWidth(null);
 			height = pinceHaut.getHeight(null);
 		} catch (IOException e) {
 			System.out.println("Les fichier \"pinceHaut.png\" et \"pinceBas.png\" n'ont pas pu être chargés.");
@@ -82,40 +77,36 @@ public class PairePince {
 	 * L'ouverture actuelle de la paire de pinces.
 	 */
 	private double currentOuverture;
-
+	
 	public PairePince(Robot r) {
 		if (r == null) throw new IllegalArgumentException("The claws have to be fixed to a robot.");
 		robot  = r;
 		moteur = r.getComposant(DevicesIndex.INDEX_MOTOR);
-		posPinces = r.getPositionPinces(); //inutile, mais histoire d'être sûr de pas se prendre une NullPointerException lors d'un test :(
-		currentOuverture = 0;
+		posPinces = robot.getPositionPinces();
+		currentOuverture = OUVERTURE_MIN;
 	}
+	/**
+	 * Met à jour la <code>PairePince</code>.
+	 */
 	public void update() {
 		posPinces = robot.getPositionPinces();
 		switch(moteur.getState()) {
-		/*
-		 * Si le moteur tourne à droite.
-		 */
-		case Motor.POSITIVE_TURN : 
-			currentOuverture += Motor.SPEED_TURN;
-			if (currentOuverture >= OUVERTURE_MAX) {
-				currentOuverture = OUVERTURE_MAX;
+		case Motor.POSITIVE_TURN :
+			currentOuverture = Math.min(currentOuverture + Motor.SPEED_TURN, OUVERTURE_MAX);
+			if (currentOuverture == OUVERTURE_MAX)
 				moteur.setState(Motor.NULL_TURN);
-			}
 			return;
-			/*
-			 * Si le moteur tourne à gauche.
-			 */
 		case Motor.NEGATIVE_TURN :
-			currentOuverture -= Motor.SPEED_TURN;
-			if (currentOuverture <= OUVERTURE_MIN) {
-				currentOuverture = OUVERTURE_MIN;
+			currentOuverture = Math.max(currentOuverture - Motor.SPEED_TURN, OUVERTURE_MIN);
+			if (currentOuverture == OUVERTURE_MIN)
 				moteur.setState(Motor.NULL_TURN);
-			}
 			return;
 		}
 	}
-	//Les instances de Graphics et Graphics2D proviennent de la classe Robot, c'est de là qu'on va appeler update() et paint(g,g2) ...
+	/**
+	 * Dessine la <code>PairePince</code>.
+	 * @param g Le contexte graphique.
+	 */
 	public void paint(Graphics2D g) {
 		if (pinceBas == null || pinceHaut == null) return;
 		AffineTransform Tx1 = new AffineTransform(); //pince bas
@@ -123,8 +114,8 @@ public class PairePince {
 		/*
 		 * translation de vecteurs images. 
 		 */
-		Tx1.translate(posPinces.x,posPinces.y-1);
-		Tx2.translate(posPinces.x,posPinces.y-height+1);
+		Tx1.translate(posPinces.x, posPinces.y - 1);
+		Tx2.translate(posPinces.x, posPinces.y - height + 1);
 		/*
 		 * rotation de vecteurs images.
 		 */
@@ -135,36 +126,6 @@ public class PairePince {
 		 */
 		g.drawImage(pinceBas,  Tx1, null);
 		g.drawImage(pinceHaut, Tx2, null);
-	}
-	/**
-	 * Ouvre les pinces en actionnant le moteur.
-	 */
-	public void open() {
-		moteur.setState(Motor.POSITIVE_TURN);
-	}
-	/**
-	 * Ferme les pinces en actionnant le moteur.
-	 */
-	public void close() {
-		moteur.setState(Motor.NEGATIVE_TURN);
-	}
-	/**
-	 * @return Si oui ou non les pinces sont entièrement ouvertes.
-	 */
-	public boolean isFullyOpen() {
-		return currentOuverture == OUVERTURE_MAX;
-	}	
-	/**
-	 * @return Si oui ou non les pinces sont entièrement fermées.
-	 */
-	public boolean isFullyClose() {
-		return currentOuverture == OUVERTURE_MIN;
-	}
-	/**
-	 * 
-	 */
-	public double getOuverture() {
-		return currentOuverture;
 	}
 	//----------------------------------------------------------------------
 	//--------------------------Actions-avec-Palet--------------------------
@@ -177,7 +138,7 @@ public class PairePince {
 	 * Les pinces aggripent un Palet !
 	 * @param p le Palet à prendre dans la paire de pinces.
 	 */
-	public void takePalet(Palet p) {
+	private void takePalet(Palet p) {
 		if (p == null) throw new IllegalArgumentException("The Palet you want to take refers 'null'.");
 		if (this.p != null) throw new IllegalArgumentException("You cannot take a Palet if you are already taking one.");
 		this.p = p;
@@ -187,11 +148,61 @@ public class PairePince {
 	 * Les pinces qui aggripaient un Palet le pose.
 	 * @param p le Palet à poser.
 	 */
-	public void dropPalet(Palet p) {
+	private void dropPalet(Palet p) {
 		if (p == null) throw new IllegalArgumentException("The Palet you want to drop refers 'null'.");
 		if (this.p == null) throw new IllegalArgumentException("You cannot drop a Palet if you didn't catch any.");
 		this.p = null;
 		p.setCatcher(null);
+	}
+	/**
+	 * Ouvre les pinces en actionnant le moteur.
+	 */
+	public void open() {
+		moteur.setState(Motor.POSITIVE_TURN);
+		if (p != null) dropPalet(p);
+	}
+	/**
+	 * Ferme les pinces en actionnant le moteur.
+	 */
+	public void close() {
+		moteur.setState(Motor.NEGATIVE_TURN);
+		if (isFullyOpen()) {
+			TouchSensor ts = robot.getComposant(DevicesIndex.INDEX_TOUCH);
+			if (ts.getState())takePalet(ts.getSource());
+		}
+	}
+	//----------------------------------------------------------------------
+	//--------------------------Getters-And-Setters-------------------------
+	//----------------------------------------------------------------------
+	/**
+	 * @return true si les pinces sont entièrement ouvertes ; false sinon.
+	 */
+	public boolean isFullyOpen() {
+		return currentOuverture == OUVERTURE_MAX;
+	}	
+	/**
+	 * @return true si les pinces sont entièrement fermées ; false sinon.
+	 */
+	public boolean isFullyClose() {
+		return currentOuverture == OUVERTURE_MIN;
+	}
+	/**
+	 * @return true si les pinces sont en train de se fermer ; false sinon.
+	 */
+	public boolean closing() {
+		return moteur.getState() == Motor.NEGATIVE_TURN;
+	}
+	/**
+	 * @return true si les pinces sont en train de s'ouvrir ; false sinon.
+	 */
+	public boolean opening() {
+		return moteur.getState() == Motor.POSITIVE_TURN;
+	}
+	/**
+	 * @return l'ouverture des pinces.
+	 */
+	public double getOuverture() {
+		return currentOuverture;
 	}
 	/**
 	 * @return le Palet qui est actuellement dans les pinces ; retroune 'null' 

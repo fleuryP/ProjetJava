@@ -3,6 +3,7 @@ package utils;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
+
 /**
  * Une <code>Form2D</code> est une forme géométrique. Elles ont la particularité
  * d'avoir une orientation différente, leur implémentation en tient compte.
@@ -34,10 +35,9 @@ public abstract class Form2D {
 	/**
 	 * Dessine la forme.
 	 * @param g L'instance graphique courante.
+	 * @param c La couleur utilisée pour peindre la forme.
 	 */
-	public void paint(Graphics2D g) {
-		g.setColor(Color.MAGENTA);
-	}
+	public abstract void paint(Graphics2D g, Color c);
 	/**
 	 * Indique si la forme contient le point en paramètre.
 	 * @param p Un Point.
@@ -45,12 +45,42 @@ public abstract class Form2D {
 	 */
 	public abstract boolean contains(Point2D p);
 	/**
+	 * Indique si la forme contient le point de coordonnées (x,y).
+	 * @param x la coordonnée x du point.
+	 * @param y la coordonnée y du point.
+	 * @return true si la forme contient le point, faux sinon.
+	 */
+	public boolean contains(double x, double y) {
+		return contains(new Point2D.Double(x,y));
+	}
+	/**
 	 * Indique si la forme de l'instance courante croise la forme
 	 * en paramètre. Commutative.
 	 * @param s Une forme géométrique.
 	 * @return true si les deux formes se croisent.
 	 */
 	public abstract boolean intersects(Form2D s);
+	/**
+	 * Indique si la <code>Form2D</code> en paramètre est strictement incluse 
+	 * dans la <code>Form2D</code> de l'instance courante.
+	 * @param s Une forme dont on teste l'inclusion.
+	 * @return true si la forme est contenue dans la forme, faux sinon.
+	 */
+	public boolean includes(Form2D s) {
+		if (s instanceof Polygon2D) {
+			for (Point2D p : ((Polygon2D)s).points)
+				if (!contains(p)) return false;
+			return true;
+		}
+		if (s instanceof Ligne2D)
+			/*
+			 * Il faudrait également vérifier les intersections, mais condition suffisante dans notre application.
+			 */
+			return contains(((Ligne2D)s).getP1()) && contains(((Ligne2D)s).getP2());
+		if (s instanceof Cercle2D)
+			return includes(s.getRectangularBounds());
+		return false;
+	}
 	/**
 	 * Retourne un rectangle de type <code>Rectangle2D</code> qui inclu la
 	 * <code>Form2D</code>. Ce rectangle est nécessairement représenté avec
@@ -64,5 +94,17 @@ public abstract class Form2D {
 	 */
 	public Point2D getCenter() {
 		return centre;
+	}
+	/**
+	 * @return Retourne la coordonnée x du centre.
+	 */
+	public double getCenterX() {
+		return centre.getX();
+	}
+	/**
+	 * @return Retourne la coordonnée y du centre.
+	 */
+	public double getCenterY() {
+		return centre.getY();
 	}
 }

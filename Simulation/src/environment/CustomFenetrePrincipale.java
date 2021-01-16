@@ -1,5 +1,7 @@
 package environment;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -7,11 +9,9 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JPanel;
 
 import agent.ControlledRobot;
-import agent.Palet;
-import devices.TouchSensor;
-import devices.UpdatableDevice.DevicesIndex;
 /**
  * Classe qui décrit une <code>FenetrePrincipale</code> avec une barre
  * de boutons en bas, qui permettent plusieurs fonctionnalités pour
@@ -23,17 +23,46 @@ import devices.UpdatableDevice.DevicesIndex;
  */
 public class CustomFenetrePrincipale extends FenetrePrincipale {
 	private static final long serialVersionUID = 1L;
-
+	/**
+	 * Panel du bas qui regroupe des boutons ; qui agissent sur des <code>ControlledRobot</code>
+	 * lorsqu'ils sont trigger.
+	 */
+	private JPanel panelWithButtons;
+	/**
+	 * Le robot contrôlé par la "barre d'outils" du bas.
+	 */
 	private ControlledRobot robotsControle;
-
+	/**
+	 * Construit une <code>FenetrePrincipale</code> plus spécifique qui permet de contrôler un
+	 * robot via une barre d'outils. Cette barre reste en bas, quelque soit la taille ou le redimensionnement.
+	 */
 	public CustomFenetrePrincipale() {
 		super();
-		setSize(getSize().width, getSize().height + 35);
-
-		robotsControle = panel.getControlledRobot();
-
+		/*
+		 * On redimmensionne pour continuer de voir l'ensemble du plateau + la barre.
+		 */
+		setSize(Plateau.X+16,Plateau.Y+84);
+		/*
+		 * On construit dans la partie Sud du getContentPane() de la Frame principale
+		 * un JPanel qui va regrouper les boutons d'actions.
+		 */
+		panelWithButtons = new JPanel();
+		FlowLayout fl = (FlowLayout)panelWithButtons.getLayout();
+		fl.setHgap(0); fl.setVgap(0);
+		fl.setAlignment(FlowLayout.CENTER);
+		super.add(panelWithButtons, BorderLayout.SOUTH);
+		
 		initPlayButton();
+		/*
+		 * On récupère tous les 'controlled' robots, sur qui s'appliquent
+		 * les évènements des boutons.
+		 */
+		robotsControle = panel.getControlledRobot();
+		
 	}
+	/**
+	 * On construit et ajoute les fonctionnalités des boutons.
+	 */
 	private void initPlayButton() {
 		final ImageIcon[]butIcons = new ImageIcon[] {
 				new ImageIcon("play.png"),
@@ -45,8 +74,8 @@ public class CustomFenetrePrincipale extends FenetrePrincipale {
 				new ImageIcon("turnright.png")
 		};
 		final JButton[]tabButs = new JButton[butIcons.length];
-		for (int i = 0; i < tabButs.length; i++) {
-			tabButs[i] = createBouton(butIcons[i],i);
+		for (int i = 0; i < butIcons.length; i++) {
+			tabButs[i] = createBouton(butIcons[i]);
 		}
 		//bouton play/pause
 		tabButs[0].addActionListener(new ActionListener() {
@@ -70,21 +99,11 @@ public class CustomFenetrePrincipale extends FenetrePrincipale {
 		tabButs[3].addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				robotsControle.getPinces().open();
-				Palet p = robotsControle.getPinces().currentGrippedPalet();
-				if (p != null) {
-					robotsControle.getPinces().dropPalet(p);
-				}
 			}
 		});
 		//bouton fermer pinces
 		tabButs[4].addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (robotsControle.getPinces().isFullyOpen()) {
-					TouchSensor ts = robotsControle.getComposant(DevicesIndex.INDEX_TOUCH);
-					if (ts.getState()) {
-						robotsControle.getPinces().takePalet(ts.getSource());
-					}
-				}
 				robotsControle.getPinces().close();
 			}
 		});
@@ -106,14 +125,13 @@ public class CustomFenetrePrincipale extends FenetrePrincipale {
 	 * On ne se soucie que de son image et de son rang en partant du coin inférieur
 	 * gauche de la fenêtre.
 	 * @param icon L'icon du bouton.
-	 * @param pos La position du bouton en partant de la gauche.
 	 * @return un Bouton paramétré mais sans listener.
 	 */
-	private final JButton createBouton(ImageIcon icon,int pos) {
+	private final JButton createBouton(ImageIcon icon) {
 		JButton b = new JButton(icon);
-		this.add(b);
-		b.setBounds(pos*35,Plateau.Y,35,35);
+		b.setSize(35,35);
 		b.setBorderPainted(false);
+		panelWithButtons.add(b);
 		return b;
 	}
 }

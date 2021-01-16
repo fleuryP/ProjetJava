@@ -1,4 +1,6 @@
 package environment;
+import java.awt.BorderLayout;
+
 import javax.swing.JFrame;
 /**
  * Classe qui décrit la fenetre en tant que JFrame et ses composants.
@@ -16,14 +18,12 @@ public class FenetrePrincipale extends JFrame {
 	protected PlateauGraphique panel;
 	
 	public FenetrePrincipale() {
-		setLayout(null);
+		setLayout(new BorderLayout());
 		setSize(Plateau.X+16,Plateau.Y+39);
 		setResizable(true);
-		//On centre la fenêtre sur l'écran lorsqu'on la rend visible.
 		setLocationRelativeTo(null);
-		//setLocation(0,-100);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		panel = new PlateauGraphique();
-		add(panel);
+		add(panel, BorderLayout.CENTER);
 	}
 }

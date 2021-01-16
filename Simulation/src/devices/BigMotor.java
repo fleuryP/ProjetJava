@@ -9,8 +9,7 @@ import environment.PlateauGraphique;
  * la vitesse souhaitée) et de tourner moins vite qu'un Motor simple. 
  * On opte alors, en plus des variables décrites dans <code>Motor</code>, pour deux variables 
  * Double qui indiquent la vitesse du moteur actuelle comprise entre deux constantes et celle que
- * le moteur doit atteindre.
- * La vitesse se note en px/s.
+ * le moteur doit atteindre. La vitesse se note en px/s.
  * @author GATTACIECCA Bastien
  * @author FLEURY Pierre
  */
@@ -29,6 +28,7 @@ public class BigMotor extends Motor {
 	 * atteindre.
 	 * @param t l'instant t de l'accélération en seconde.
 	 * @param speedToReach la vitesse en px/update.
+	 * @return retourne la vitesse calculée.
 	 */
 	public static final double speedFunction(double t, double speedToReach) {
 		return speedToReach == 0 ? 0 : speedToReach + (t - 0.15) / (2 * Math.pow(100,t - 0.15));
@@ -107,13 +107,14 @@ public class BigMotor extends Motor {
 	 */
 	public void setImmediateSpeed(double currentSpeed) {
 		setSpeed(currentSpeed);
+		this.speedToReach = currentSpeed;
 		this.currentSpeed = currentSpeed;
 	}
 	/**
 	 * Accesseur à <code>speedToReach</code> pour redéfinir l'état du moteur. Si <code>state</code> 
 	 * n'est pas une des constantes d'état du moteur, lève une <code>IllegalArgumentException</code>.
-	 * Cette méthode redéfinit </code>setState(byte)</code> de </code>Motor</code> pour (ici) définir 
-	 * directement la vitesse moteur à atteindre à </code>SPEED_MIN</code>, 0 ou </code>SPEED_MAX</code>.
+	 * Cette méthode redéfinit <code>setState(byte)</code> de <code>Motor</code> pour (ici) définir 
+	 * directement la vitesse moteur à atteindre à <code>SPEED_MIN</code>, 0 ou <code>SPEED_MAX</code>.
 	 * @param state Le nouvel état du moteur.
 	 */
 	public void setState(byte state) {

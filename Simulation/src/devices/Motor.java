@@ -1,4 +1,7 @@
 package devices;
+
+import environment.PlateauGraphique;
+
 /**
  * Classe qui décrit les fonctionnalités du moteur moyen. Ce moteur est utilisé
  * pour ouvrir ou fermer les pinces. L'axe du moteur fait tourner une vis sans
@@ -27,7 +30,7 @@ public class Motor implements UpdatableDevice {
 	 * Constante de la vitesse du moteur. 0.01 est purement arbitraire 
 	 * pour le moment. Il s'agit de la vitesse d'ouverture des pinces.
 	 */
-	public static final double SPEED_TURN = 0.01;
+	public static final double SPEED_TURN = 0.5 / PlateauGraphique.SPEED_FACTOR;
 	/**
 	 * Indique l'état courant du moteur {<code>POSITIVE_TURN</code>, 
 	 * <code>NEGATIVE_TURN</code>, <code>NULL_TURN</code>}.

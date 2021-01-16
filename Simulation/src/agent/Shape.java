@@ -1,19 +1,20 @@
 package agent;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 import utils.Cercle2D;
 import utils.Form2D;
-import utils.Maths;
+import utils.Geometry;
 import utils.Polygon2D;
 /**
  * Classe abstraite qui caractérise la shape (la forme) d'un <code>Objects</code>. Les <code>Shape
  * </code> permettent de gérer sur le plateau les collisions entre <code>Objects</code> : c'est-à-dire
  * si un <code>Robot</code> en rencontre un autre, ou s'il rencontre un <code>Palet</code> ; mais aussi
  * inversément, il est nécessaire de savoir lorsqu'un <code>Palet</code> rencontre un <code>Robot</code>
- * ou s'il rencontre un autre <code>Palet</code> car celui-ci est poussé par un robot les pinces fermées !
+ * ou s'il rencontre un autre <code>Palet</code> car celui-ci est poussé par un robot !
  * <p>
  * Il n'y a que deux sous-classes d'<code>Objects</code> que sont <code>Palet</code> et <code>Robot</code>.
  * Leurs shapes respectives sont donc les deux classes static imbriquées de cette classe abstraite.
@@ -32,12 +33,11 @@ public abstract class Shape {
 	 * leur shape quand ils sont capturés par un <code>Robot</code>.
 	 */
 	protected boolean invalidate;
-	public boolean isValid() {return invalidate;}
 	/**
 	 * La forme géométrique qui caractérise la forme de l'<code>Objects</code>.
 	 */
 	protected Form2D formeGeom;
-
+	
 	protected Shape() {
 		invalidate = false;
 	}
@@ -55,7 +55,7 @@ public abstract class Shape {
 	 * @param g L'instance graphique courante.
 	 */
 	public void paint(Graphics2D g) {
-		formeGeom.paint(g);
+		formeGeom.paint(g,Color.GREEN);
 	}
 	/**
 	 * Permet de savoir quand la shape d'un <code>Objects</code> croise la shape de l'objects de
@@ -78,6 +78,27 @@ public abstract class Shape {
 	public boolean contains(Point2D p) {
 		if (p == null || invalidate) return false;
 		return formeGeom.contains(p);
+	}
+	/**
+	 * Permet de savoir si un point se situe dans la shape de l'<code>Objects</code>.
+	 * @param x la coordonnée x du point.
+	 * @param y la coordonnée y du point.
+	 * @return Si oui ou non il se situe dans la shape.
+	 */
+	public boolean contains(double x, double y) {
+		return formeGeom.contains(x,y);
+	}
+	/**
+	 * Permet de savoir si la <code>Shape</code> en paramètre est incluse dans la
+	 * <code>Shape</code> courante compte tenu de son orientation.
+	 * @param s Une shape.
+	 * @return true si la shape est incluse intégralement dans la shape courante,
+	 * faux sinon.
+	 */
+	public boolean includes(Shape s) {
+		if (this == s) throw new IllegalArgumentException("A shape cannot includes itself.");
+		if (s == null || invalidate || s.invalidate) return false;
+		return formeGeom.includes(s.formeGeom);
 	}
 	/**
 	 * Retourne la forme géométrique de la <code>Shape</code>.
@@ -115,7 +136,7 @@ public abstract class Shape {
 			points = new ArrayList<Point2D>();
 			/*
 			 * Localisation relative des points que forment le robot en partant
-			 * du centre.
+			 * du centre. On construit donc un Polygon2D avec ces données.
 			 */
 			points.add(new Point2D.Double(-65,-24));
 			points.add(new Point2D.Double(-30,-39));
@@ -132,8 +153,8 @@ public abstract class Shape {
 		 * {@inheritDoc}
 		 */
 		public void update(double x, double y, double angle, double ouverture) {
-			double largeur = getShapeWidth() + Maths.givesSameScale(60d,-10d,PairePince.OUVERTURE_MIN,PairePince.OUVERTURE_MAX,ouverture);
-			double anglePinces = Maths.givesSameScale(0,0.85d,PairePince.OUVERTURE_MIN,PairePince.OUVERTURE_MAX,ouverture);
+			double largeur = getShapeWidth() + Geometry.givesSameScale(60d,-10d,PairePince.OUVERTURE_MIN,PairePince.OUVERTURE_MAX,ouverture);
+			double anglePinces = Geometry.givesSameScale(0,0.85d,PairePince.OUVERTURE_MIN,PairePince.OUVERTURE_MAX,ouverture);
 			((Polygon2D)formeGeom).update(x, y, angle, anglePinces, largeur);
 		}
 		/**

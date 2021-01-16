@@ -1,4 +1,6 @@
 package devices;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 
@@ -67,32 +69,31 @@ public class TouchSensor extends Sensor {
 		 * Met à jour la position du balancier en fonction de la position
 		 * du capteur tactile.
 		 */
-		Point2D.Double capteurs = getRobot().getPositionCapteurs();
-		double angle = getRobot().getAngle() + Math.PI/2;
+		Point2D.Double capteurs = robot.getPositionCapteurs();
+		double angle = robot.getAngle() + Math.PI/2;
 		balancier.update(
-				capteurs.x + 16 * Math.cos(angle),
-				capteurs.y + 16 * Math.sin(angle),
-				capteurs.x - 16 * Math.cos(angle),
-				capteurs.y - 16 * Math.sin(angle));
+				capteurs.x + Robot.CAPTEUR_BALANCIER * Math.cos(angle),
+				capteurs.y + Robot.CAPTEUR_BALANCIER * Math.sin(angle),
+				capteurs.x - Robot.CAPTEUR_BALANCIER * Math.cos(angle),
+				capteurs.y - Robot.CAPTEUR_BALANCIER * Math.sin(angle));
 		/**
 		 * Si les pinces sont fermées et que :
 		 * - le robot n'a pas de palet : alors dans aucun cas le capteur tactile peut renvoyer une valeur vraie.
 		 * - le robot aggripe un palet : alors les bounds de ce palet sont 'null' et le capteur ne touche rien.
 		 * donc qqsoit la situation ; si les pinces sont fermées, le capteur renvoie RELEASED.
 		 */
-		if (getRobot().getPinces().isFullyClose()) {
+		if (robot.getPinces().isFullyClose()) {
 			state = TOUCH_RELEASED;
 			return;
 		}
-
 		/**
 		 * On récupère tous les Palets ; susceptibles de trigger le capteur
 		 * tactile.
 		 */
-		Collection<Palet> palets = super.getEnvironnement().getPalets();
+		Collection<Palet> palets = environnement.getPalets();
 		for (Palet p : palets) {
 			Form2D c = p.getShape().getForm();
-			if (Geometry.intersectsOf(balancier,(Cercle2D)c) != null) {
+			if (Geometry.intersects(balancier,(Cercle2D)c)) {
 				source = p;
 				state = TOUCH_PRESSED;
 				return;
@@ -115,6 +116,14 @@ public class TouchSensor extends Sensor {
 	 */
 	public Palet getSource() {
 		return source;
+	}
+	/**
+	 * {@inheritDoc}
+	 * Dessine le balancier en rouge lorsque rien n'appuie dessus, en vert
+	 * lorsqu'un palet appuie dessus.
+	 */
+	public void paintDevice(Graphics2D g) {
+		balancier.paint(g,state ? Color.GREEN : Color.RED);
 	}
 	/**
 	 * Représentation textuelle du <code>TouchSensor</code>.

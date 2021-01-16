@@ -1,6 +1,9 @@
-import java.util.Random;
-import environment.CustomFenetrePrincipale;
-
+import environment.*;
+/**
+ * Classe qui éxecute l'application
+ * @author GATTACIECCA Bastien
+ * @author FLEURY Pierre
+ */
 public class Exe {
 	public static void main(String[] args) {
 		/**
@@ -9,8 +12,5 @@ public class Exe {
 		 */
 		CustomFenetrePrincipale p = new CustomFenetrePrincipale();
 		p.setVisible(true);
-		
-		Random rg = new Random();
-		rg.nextGaussian();	
 	}
 }

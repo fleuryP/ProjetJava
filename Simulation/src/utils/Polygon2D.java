@@ -1,5 +1,6 @@
 package utils;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class Polygon2D extends Form2D {
 	public Polygon2D() {
 		points = new ArrayList<Point2D>();
 		lignes = new ArrayList<Ligne2D>();
+		centre.setLocation(0,0);
 	}
 	/**
 	 * Construit un polygone à partir d'une liste de points. Les lignes seront tracées
@@ -46,18 +48,23 @@ public class Polygon2D extends Form2D {
 		}
 		relier();
 	}
+	/**
+	 * Update un polygone à partir d'une liste de points. Les lignes seront tracées
+	 * en liant les points dans l'ordre dans lequel ils sont.
+	 * @param p Une collection de <code>Point2D</code>.
+	 */
 	public void update(Collection<Point2D> p) {
 		if (p.size() < 3) throw new IllegalArgumentException("A polygon must get 3 points at least.");
 		points.clear();
 		points.addAll(p);
 		relier();
 	}
-	private double previousAngle;
 	public void update(double x, double y, double angle, double ouverturePinces, double largeur) {
 		update(x,y,angle);
-		points.get(3).setLocation(centreX + largeur/3 * Math.cos(angle - 0.2 - ouverturePinces), centreY + largeur/3 * Math.sin(angle - 0.2 - ouverturePinces));
-		points.get(4).setLocation(centreX + largeur/3 * Math.cos(angle + 0.2 + ouverturePinces), centreY + largeur/3 * Math.sin(angle + 0.2 + ouverturePinces));
+		points.get(3).setLocation(centreX + largeur/3 * Math.cos(angle - 0.3 - ouverturePinces), centreY + largeur/3 * Math.sin(angle - 0.3 - ouverturePinces));
+		points.get(4).setLocation(centreX + largeur/3 * Math.cos(angle + 0.3 + ouverturePinces), centreY + largeur/3 * Math.sin(angle + 0.3 + ouverturePinces));
 	}
+	private double previousAngle;
 	/**
 	 * {@inheritDoc}
 	 */
@@ -141,29 +148,27 @@ public class Polygon2D extends Form2D {
 		if (s == null) throw new IllegalArgumentException("The form refers to 'null'.");
 		if (s instanceof Polygon2D) {
 			ArrayList<Ligne2D> lignes2 = ((Polygon2D)s).lignes;
-			for (int i = 0; i < lignes.size(); i++) {
-				for (int j = i; j < lignes2.size(); j++) {
+			for (int i = 0; i < lignes.size(); i++)
+				for (int j = i; j < lignes2.size(); j++)
 					if (lignes.get(i).intersects(lignes2.get(j))) return true;
-				}
-			}
 		}
 		if (s instanceof Ligne2D) {
 			Ligne2D otherLine = (Ligne2D)s;
-			for (Ligne2D l : lignes) {
-				if (Geometry.intersectsOf(l, otherLine)) return true;
-			}
+			for (Ligne2D l : lignes)
+				if (Geometry.intersects(l, otherLine)) return true;
 		}
 		if (s instanceof Cercle2D) {
 			Cercle2D palet = (Cercle2D)s;
-			for (Ligne2D l : lignes) {
-				if ((hitPoint = Geometry.intersectsOf(l,palet)) != null) {
+			for (Ligne2D l : lignes)
+				if ((hitPoint = Geometry.intersectsOf(l,palet)) != null)
 					return true;
-				}
-			}
 		}
 		hitPoint = null;
 		return false;
 	}
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Rectangle2D getRectangularBounds() {
 		double minX,minY,maxX,maxY;
@@ -179,11 +184,9 @@ public class Polygon2D extends Form2D {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void paint(Graphics2D g) {
-		super.paint(g);
-		g.fillRect((int)centre.getX(),(int)centre.getY(), 4, 4);
-		for (Ligne2D l : lignes) {
-			l.paint(g);
-		}
+	public void paint(Graphics2D g, Color c) {
+		g.setColor(c);
+		for (Ligne2D l : lignes)
+			l.paint(g,c);
 	}
 }

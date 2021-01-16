@@ -1,5 +1,7 @@
 package devices;
 import java.awt.Color;
+import java.awt.Graphics2D;
+
 import agent.*;
 import environment.*;
 /**
@@ -36,14 +38,20 @@ public class ColorSensor extends Sensor {
 
 	public ColorSensor(PlateauGraphique pg, Robot r) {
 		super(pg,r);
-		pixels = getEnvironnement().getPixels();
+		pixels = environnement.getPixels();
 		currentColor = new Color(0,0,0);
 	}
 	@Override
 	public void updateDevice() {
-		double x = getRobot().getPositionCapteurs().x;
-		double y = getRobot().getPositionCapteurs().y;
-		currentColor = pixels[(int)x][(int)y];
+		double x = robot.getPositionCapteurs().x;
+		double y = robot.getPositionCapteurs().y;
+		try {
+			currentColor = pixels[(int)x][(int)y];
+		}catch(ArrayIndexOutOfBoundsException e) {
+			/*
+			 * Si en dehors du tableau il n'y a rien à faire.
+			 */
+		}
 		//System.out.println(getColor().name());
 	}
 	/**
@@ -70,6 +78,13 @@ public class ColorSensor extends Sensor {
 		int G = currentColor.getGreen();
 		int B = currentColor.getBlue();
 		return new int[] {R,G,B};
+	}
+	/**
+	 * {@inheritDoc}
+	 */
+	public void paintDevice(Graphics2D g) {
+		g.setColor(currentColor);
+		g.fillRect((int)robot.getPositionCapteurs().x-2, (int)robot.getPositionCapteurs().y-2, 6, 6);
 	}
 	/**
 	 * Représentation textuelle du <code>ColorSensor</code>.

@@ -44,4 +44,10 @@ public abstract class Sensor implements UpdatableDevice {
 	public Robot getRobot() {
 		return robot;
 	}
+	/**
+	 * Représentation textuelle d'un <code>Sensor</code>.
+	 */
+	public String toString() {
+		return robot.getName() + "'s " + getClass().getSimpleName();
+	}
 }

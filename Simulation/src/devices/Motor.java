@@ -68,4 +68,11 @@ public class Motor implements UpdatableDevice {
 				"argument = "+state+"; must be "+NEGATIVE_TURN+", "+NULL_TURN+", or "+POSITIVE_TURN);
 		}
 	}
+	/**
+	 * Représentation textuelle du <code>Moteur</code>.
+	 */
+	public String toString() {
+		String constantName = currentState == NULL_TURN ? "NULL_TURN" : currentState == POSITIVE_TURN ? "POSITIVE_TURN" : "NEGATIVE_TURN";
+		return getClass().getSimpleName() + "[state = " + constantName + "]";
+	}
 }

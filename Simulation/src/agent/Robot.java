@@ -1,13 +1,13 @@
 package agent;
 
-import java.awt.Graphics;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -18,20 +18,21 @@ import devices.SonicSensor;
 import devices.TouchSensor;
 import devices.UpdatableDevice;
 import devices.UpdatableDevice.DevicesIndex;
-import environment.Plateau;
 import environment.PlateauGraphique;
 /**
- * Classe qui décrit les caractéristiques d'un <code>Robot</code>. Un Robot
- * est un <code>Objects</code> dans l'environnement. Un <code>Robot</code>
+ * Classe abstraite qui décrit les caractéristiques d'un <code>Robot</code>. 
+ * Un Robot est un <code>Objects</code> dans l'environnement. Un <code>Robot</code>
  * possède un ensemble de <code>UpdatableDevice</code> qui correspondent à
  * ses composants. Ils sont de deux types : les <code>Motor</code> qui lui
  * servent à interagir dans l'environnement et les <code>Sensor</code> qui
- * lui permettent de récupérer de l'information de cet environnement.
+ * lui permettent de récupérer de l'information de cet environnement. La classe
+ * est abstraite car on ne peut encore déterminer de quelle manière se déplace
+ * ce <code>Robot</code>.
  * 
  * @author GATTACIECCA Bastien
  * @author FLEURY Pierre
  */
-public class Robot extends Objects {
+public abstract class Robot extends Objects {
 	private static Image img;
 	static {
 		try {
@@ -47,23 +48,26 @@ public class Robot extends Objects {
 	 */
 	private final String name;
 	/**
-	 * Liste des composants du robot. Moteurs & Senseurs.
+	 * Liste des composants du robot. Moteurs & Senseurs. dans le bon ordre.
+	 * L'ordre est celui des constantes définies dans <code>UpdatableDevice</code>.
+	 * Les propriétés physiques du robot ne sont pas modifiables. Il est interdit de
+	 * rajouter des moteurs ou des capteurs -> déclaré final.
 	 */
-	private final UpdatableDevice[] composants;
+	private final ArrayList<UpdatableDevice> composants;
 	/**
 	 * Position des capteurs, rappelons que tous les senseurs se trouvent, sur le plan 
 	 * (x,y), au même point ! (vu d'en haut)
 	 */
-	private Point2D.Double positionCapteurs;
+	private final Point2D.Double positionCapteurs;
 	/**
 	 * Position du point de rotation des pinces.
 	 */
-	private Point2D.Double positionPinces;
+	private final Point2D.Double positionPinces;
 	/**
 	 * Une paire de pinces pour notre joyeux robot :)
-	 * Les pinces ne sont pas un composant du robot. Elles sont dirigées par le petit moteur </code>Motor<code>
+	 * Les pinces ne sont pas un composant du robot. Elles sont dirigées par le petit moteur </code>Motor<code>.
 	 */
-	private PairePince pp;
+	private final PairePince pairePinces;
 	/**
 	 * Initialise les attributs d'instance du robot.
 	 * @param pg l'environnement graphique dans lequel vit le robot.
@@ -76,26 +80,28 @@ public class Robot extends Objects {
 		if (pg == null) throw new IllegalArgumentException("The robot must live in an environment.");
 		if (name == null) throw new IllegalArgumentException("The robot must be named.");
 		this.name = name;
+		shape = new Shape.Robot();
 		positionCapteurs = new Point2D.Double();
 		positionPinces = new Point2D.Double();
-		updatePosition();
-		composants = new UpdatableDevice[] {
-				new BigMotor(), 						//2 servo-moteurs pour les deux roues
-				new BigMotor(), 
-				new Motor(), 							//1 ptit moteur pour la paire de pinces
-				new TouchSensor(pg,this),	//1 capteur tactile
-				new SonicSensor(pg,this),	//1 capteur ultrasons
-				new ColorSensor(pg,this)	//1 capteur couleur
-		};
-		pp = new PairePince(this); //1 paire de pince
+		updatePositions();
+		
+		composants = new ArrayList<UpdatableDevice>();
+		composants.add(new BigMotor());
+		composants.add(new BigMotor());
+		composants.add(new Motor());
+		composants.add(new TouchSensor(pg,this));
+		composants.add(new SonicSensor(pg,this));
+		composants.add(new ColorSensor(pg,this));
+		
+		pairePinces = new PairePince(this); //1 paire de pince
 	}
 	/**
 	 * Relocalise la position des capteurs et des pinces lorsque le robot se déplace.
 	 */
-	private void updatePosition() {
+	private void updatePositions() {
 		double cos = Math.cos(getAngle());
 		double sin = Math.sin(getAngle());
-		int distanceCapteurs = 110 - getWidth()/2;
+		int distanceCapteurs = 51; //Info depuis le robot.png ...
 		positionCapteurs.setLocation(
 				getX() + distanceCapteurs * cos, 
 				getY() + distanceCapteurs * sin);
@@ -103,36 +109,68 @@ public class Robot extends Objects {
 	}
 	@Override
 	public void update() {
-		//à actualiser, car quand le robot se déplace, ses capteurs aussi !
-		updatePosition();
-		//on update tous les composants du robot
+		shape.update(
+				getX() + 25 * Math.cos(getAngle()), 
+				getY() + 25 * Math.sin(getAngle()), 
+				getAngle(),
+				pairePinces.getOuverture());
+		/*
+		 * à actualiser, car quand le robot se déplace, ses capteurs aussi !
+		 */
+		updatePositions();
+		/*
+		 * on update tous les composants du robot
+		 */
 		for (UpdatableDevice instru : composants) {
 			instru.updateDevice();
 		}
-		pp.update();
+		pairePinces.update();
 	}
 	@Override
-	public void paint(Graphics g) {
+	public void paint(Graphics2D g) {
 		if (img == null) return;
-		Graphics2D g2 = (Graphics2D)g;
 		AffineTransform Tx = new AffineTransform();
-		Tx.translate(
-				getX() - getWidth()/2,
-				getY() - getHeight()/2);
-		Tx.rotate(
-				getAngle(),
-				getWidth() /2,
-				getHeight()/2);
-		//on dessine les pinces et le robot par dessus
-		pp.paint(g,g2);
-		g2.drawImage(img, Tx, null);
+		/*
+		 * translation de vecteur image. 
+		 */
+		Tx.translate(getX() - getWidth()/2, getY() - getHeight()/2);
+		/*
+		 * rotation de vecteur image.
+		 */
+		Tx.rotate(getAngle(), getWidth()/2, getHeight()/2);
+		/*
+		 * on dessine les pinces d'abord puis le robot par dessus
+		 */
+		pairePinces.paint(g);
+		g.drawImage(img, Tx, null);
+		
+		g.setColor(Color.RED);
+		g.fillRect((int)positionCapteurs.x, (int)positionCapteurs.y, 2, 2);
+		
+		((SonicSensor)getComposant(DevicesIndex.INDEX_SONIC)).paint(g);
+		shape.paint(g);
+		
+		shape.getForm().getRectangularBounds().paint(g);
+	}
+	/**
+	 * @return La vitesse du <code>Robot</code>.
+	 */
+	public abstract double getSpeed();
+	/**
+	 * @return Si le <code>Robot</code> est en mouvement.
+	 */
+	public abstract boolean isMoving();
+	/**
+	 * @return le nom du robot.
+	 */
+	public String getName() {
+		return name;
 	}
 	/**
 	 * Représentation textuelle de l'état du robot.
 	 */
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		return sb.append("Tribot ").append(name).append("\nPosition = [x=").append(getX()).append(";y=").append(getY()).append("]").toString();
+		return "Tribot "+name+"("+getX()+";"+getY()+")";
 	}
 	/**
 	 * @return la position des capteurs.
@@ -147,63 +185,27 @@ public class Robot extends Objects {
 		return positionPinces;
 	}
 	/**
-	 * @return la largeur de l'image du robot.
+	 * @return la paire de pinces du robot.
 	 */
-	public int getWidth() {
+	public PairePince getPinces() {
+		return pairePinces;
+	}
+	/**
+	 * @return la largeur de l'image d'un robot.
+	 */
+	public static int getWidth() {
 		return img.getWidth(null);
 	}
 	/**
-	 * @return la hauteur de l'image du robot.
+	 * @return la hauteur de l'image d'un robot.
 	 */
-	public int getHeight() {
+	public static int getHeight() {
 		return img.getHeight(null);
 	}
-	/**
-	 * Construis un carré inclu dans le robot, quelque soit sa direction.
-	 * Il s'agit de bounds très générales pour le robot et ne sera utilisé
-	 * que pour pouvoir drag la position du robot à la souris lorqu'on sera
-	 * dans le mode adéquat.
-	 * @param p 
-	 * @return
-	 */
-	public Rectangle getSquareBounds() {
-		return new Rectangle(
-				(int)getX()-getHeight()/2,
-				(int)getY()-getHeight()/2,getHeight(),getHeight());
-	}
-	/**
-	 * Redéfini la position du robot sur l'axe des x.
-	 */
-	public void setX(double x) {
-		if (x + Math.cos(getAngle()) * getWidth()/2 > 0 
-				&& x + Math.cos(getAngle()) * getWidth()/2 < Plateau.X
-				&& x > getWidth()/2 - 10
-				&& x < Plateau.X - getWidth()/2 + 10) {
-			super.setX(x);
-		}
-	}
-	/**
-	 * Redéfini la position du robot sur l'axe des y.
-	 */
-	public void setY(double y) {
-		if (y + Math.sin(getAngle()) * getWidth()/2 > 0 
-				&& y + Math.sin(getAngle()) * getWidth()/2 < Plateau.Y
-				&& y > getWidth()/2 - 10
-				&& y < Plateau.Y - getWidth()/2 + 10) {
-			super.setY(y);
-		}
-	}
-	/**
-	 * Récupère le composant à l’indice en paramètre. Cet indice est une 
-	 * constante vu que les composants du robot sont non modifiables (et 
-	 * on instancie les composants dans un ordre précis).
-	 * @param INDEX_CONTSANT Une des constantes définies dans l'interface
-	 * UpdatableDevice
-	 * @return le composant du robot à l'index spécifié.
-	 */
-	public UpdatableDevice getComposant(DevicesIndex cste) {
+	
+	@SuppressWarnings("unchecked")
+	public <U extends UpdatableDevice> U getComposant(DevicesIndex cste) {
 		if (cste == null) throw new IllegalArgumentException("The argument must be a constant among existing UpdatableDevice constants.");
-		return composants[cste.ordinal()];
-		
+		return (U)composants.get(cste.ordinal());
 	}
 }
